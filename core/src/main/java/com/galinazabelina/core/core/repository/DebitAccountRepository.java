@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface DebitAccountRepository extends CrudRepository<Account, Long> {
 
-    @Query("update Account set isClosed = false where id = :accountId")
+    @Query("update Account set isClosed = true where id = :accountId")
     void closeAccountById(@Param("accountId") Long accountId);
 
     @Query("select balance from Account where id = :accountId")

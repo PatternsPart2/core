@@ -4,10 +4,16 @@ import com.galinazabelina.core.api.dto.AccountDto;
 import com.galinazabelina.core.core.AccountService;
 import com.galinazabelina.core.core.repository.CreditAccountRepository;
 import com.galinazabelina.core.core.repository.DebitAccountRepository;
+import com.galinazabelina.core.core.repository.OperationsHistoryRepository;
 import com.galinazabelina.core.core.repository.UserRepository;
 import com.galinazabelina.core.model.AccountType;
+import com.galinazabelina.core.model.OperationType;
 import com.galinazabelina.core.model.entity.Account;
+
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+
+import com.galinazabelina.core.model.entity.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +26,8 @@ public class DefaultAccountService implements AccountService {
     private final DebitAccountRepository debitAccountRepository;
 
     private final CreditAccountRepository creditAccountRepository;
+
+    private final OperationsHistoryRepository operationsHistoryRepository;
 
     private final UserRepository userRepository;
 
@@ -40,12 +48,18 @@ public class DefaultAccountService implements AccountService {
 
     @Override
     public AccountDto openAccount(AccountDto accountDto, AccountType accountType) {
+        accountDto.setIsClosed(false);
         Account newAccount;
         if (accountType == AccountType.DEBIT) {
             newAccount = debitAccountRepository.save(dtoToAccount(accountDto));
         } else {
             newAccount = creditAccountRepository.save(dtoToAccount(accountDto));
         }
+        Operation operation = new Operation();
+        operation.setAccountId(newAccount.getId());
+        operation.setTimestamp(ZonedDateTime.now());
+        operation.setOperationType(OperationType.OPEN_ACCOUNT);
+        operationsHistoryRepository.save(operation);
         return entityToDto(newAccount);
     }
 
@@ -56,6 +70,11 @@ public class DefaultAccountService implements AccountService {
         } else {
             creditAccountRepository.closeAccountById(id);
         }
+        Operation operation = new Operation();
+        operation.setAccountId(id);
+        operation.setTimestamp(ZonedDateTime.now());
+        operation.setOperationType(OperationType.CLOSE_ACCOUNT);
+        operationsHistoryRepository.save(operation);
 
     }
 

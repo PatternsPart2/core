@@ -29,6 +29,9 @@ public class Operation {
     @Column(name = "amount_of_money")
     private Long amountOfMoney;
 
+    @Column(name = "currency_code")
+    private String currencyCode;
+
     @Column(name = "operation_timestamp")
     private ZonedDateTime timestamp;
 

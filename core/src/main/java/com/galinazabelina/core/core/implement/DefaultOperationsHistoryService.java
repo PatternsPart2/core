@@ -5,10 +5,8 @@ import com.galinazabelina.core.core.OperationsHistoryService;
 import com.galinazabelina.core.core.repository.OperationsHistoryRepository;
 import com.galinazabelina.core.model.entity.Operation;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.cfg.beanvalidation.GroupsPerOperation;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
