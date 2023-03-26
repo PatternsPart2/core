@@ -1,13 +1,12 @@
 package com.galinazabelina.core.core;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.galinazabelina.core.model.AccountType;
-import com.galinazabelina.core.model.OperationType;
-import com.galinazabelina.core.model.entity.Operation;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 public interface OperationsService {
 
-    void changeBalance(Long accountId, Long changeValue, AccountType accountType);
+    void changeBalance(Long accountId, BigDecimal changeValue, AccountType accountType) throws JsonProcessingException;
 
 }

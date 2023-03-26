@@ -1,5 +1,6 @@
 package com.galinazabelina.core;
 
+import com.galinazabelina.core.core.rabbit.RabbitConfiguration;
 import com.galinazabelina.core.model.entity.Account;
 import com.galinazabelina.core.model.entity.EntityConfig;
 import com.galinazabelina.core.model.entity.Operation;
@@ -12,10 +13,9 @@ import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
 @EntityScan(basePackageClasses = {Account.class, Operation.class, User.class})
-@Import(EntityConfig.class)
+@Import({EntityConfig.class, RabbitConfiguration.class})
 public class Application {
     public static void main(final String[] args) {
-//        final ResourceLoader resourceLoader = new ResourceLoader("com.galinazabelina.core.api")
         SpringApplication springApplication = new SpringApplication(Application.class);
         springApplication.setBannerMode(Banner.Mode.OFF);
         springApplication.run(args);

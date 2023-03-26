@@ -1,17 +1,18 @@
 package com.galinazabelina.core.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.galinazabelina.core.api.dto.AccountDto;
 import com.galinazabelina.core.core.AccountService;
 import com.galinazabelina.core.core.Parameters;
 import com.galinazabelina.core.model.AccountType;
-import com.galinazabelina.core.model.entity.Account;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.*;
 import java.util.List;
 
-@Path(Paths.ACCOUNTS)
+@RestController
+@RequestMapping(Paths.ACCOUNTS)
 public class AccountResource {
 
     private final AccountService accountService;
@@ -20,37 +21,33 @@ public class AccountResource {
         this.accountService = accountService;
     }
 
-    @GET
-    public AccountDto getAccount(@PathParam(Parameters.id) Long id) {
-        return accountService.get(id);
-    }
+//    @GET
+//    public AccountDto getAccount(@PathParam(Parameters.id) Long id) {
+//        return accountService.get(id);
+//    }
 
-    @GET
+    @GetMapping
     public List<AccountDto> getAccounts() {
         return accountService.getAccounts();
     }
 
-    @POST
-    @Path(Paths.OPEN_DEBIT_ACCOUNT)
-    public AccountDto openDebitAccount(@RequestParam(Parameters.accountDto) AccountDto accountDto) {
+    @PostMapping(Paths.OPEN_DEBIT_ACCOUNT)
+    public AccountDto openDebitAccount(@RequestBody AccountDto accountDto) throws JsonProcessingException {
         return accountService.openAccount(accountDto, AccountType.DEBIT);
     }
 
-    @POST
-    @Path(Paths.OPEN_CREDIT_ACCOUNT)
-    public AccountDto openCreditAccount(@RequestParam(Parameters.accountDto) AccountDto accountDto) {
+    @PostMapping(Paths.OPEN_CREDIT_ACCOUNT)
+    public AccountDto openCreditAccount(@RequestBody AccountDto accountDto) throws JsonProcessingException {
         return accountService.openAccount(accountDto, AccountType.CREDIT);
     }
 
-    @POST
-    @Path(Paths.OPEN_DEBIT_ACCOUNT)
-    public void closeDebitAccount(@FormParam(Parameters.id) Long id) {
+    @PostMapping(Paths.CLOSE_DEBIT_ACCOUNT)
+    public void closeDebitAccount(@PathParam(Parameters.id) Long id) throws JsonProcessingException {
         accountService.closeAccount(id, AccountType.DEBIT);
     }
 
-    @POST
-    @Path(Paths.CLOSE_CREDIT_ACCOUNT)
-    public void closeCreditAccount(@FormParam(Parameters.id) Long id) {
+    @PostMapping(Paths.CLOSE_CREDIT_ACCOUNT)
+    public void closeCreditAccount(@PathParam(Parameters.id) Long id) throws JsonProcessingException {
         accountService.closeAccount(id, AccountType.CREDIT);
     }
 }

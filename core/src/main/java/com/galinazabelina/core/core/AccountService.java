@@ -1,8 +1,8 @@
 package com.galinazabelina.core.core;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.galinazabelina.core.api.dto.AccountDto;
 import com.galinazabelina.core.model.AccountType;
-import com.galinazabelina.core.model.entity.Account;
 import java.util.List;
 
 public interface AccountService {
@@ -11,8 +11,8 @@ public interface AccountService {
 
     List<AccountDto> getAccounts();
 
-    AccountDto openAccount(AccountDto accountDto, AccountType accountType);
+    AccountDto openAccount(AccountDto accountDto, AccountType accountType) throws JsonProcessingException;
 
-    void closeAccount(Long id, AccountType accountType);
+    void closeAccount(Long id, AccountType accountType) throws JsonProcessingException;
 
 }

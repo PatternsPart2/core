@@ -1,12 +1,12 @@
 package com.galinazabelina.core.api.dto;
 
 import com.galinazabelina.core.model.OperationType;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 @Getter
@@ -21,7 +21,7 @@ public class OperationDto {
 
     private Long accountId;
 
-    private Long amountOfMoney;
+    private BigDecimal amountOfMoney;
 
     private ZonedDateTime timestamp;
 

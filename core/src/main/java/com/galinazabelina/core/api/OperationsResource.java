@@ -1,13 +1,19 @@
 package com.galinazabelina.core.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.galinazabelina.core.core.OperationsService;
 import com.galinazabelina.core.core.Parameters;
 import com.galinazabelina.core.model.AccountType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.ws.rs.*;
+import java.math.BigDecimal;
 
-@Path(Paths.OPERATIONS)
+@RestController
+@RequestMapping(Paths.OPERATIONS)
 public class OperationsResource {
 
     private final OperationsService operationsService;
@@ -16,19 +22,17 @@ public class OperationsResource {
         this.operationsService = operationsService;
     }
 
-    @PATCH
-    @Path(Paths.DEBIT)
+    @PatchMapping(Paths.DEBIT)
     public void changeBalanceDebitAccount(
-            @FormParam(Parameters.id) Long accountId,
-            @FormParam(Parameters.changeValue) Long changeValue) {
+            @PathParam(Parameters.id) Long accountId,
+            @QueryParam(Parameters.changeValue) BigDecimal changeValue) throws JsonProcessingException {
         operationsService.changeBalance(accountId, changeValue, AccountType.DEBIT);
     }
 
-    @PATCH
-    @Path(Paths.CREDIT)
+    @PatchMapping(Paths.CREDIT)
     public void changeBalanceCreditAccount(
-            @FormParam(Parameters.id) Long accountId,
-            @FormParam(Parameters.changeValue) Long changeValue) {
+            @PathParam(Parameters.id) Long accountId,
+            @QueryParam(Parameters.changeValue) BigDecimal changeValue) throws JsonProcessingException {
         operationsService.changeBalance(accountId, changeValue, AccountType.CREDIT);
     }
 

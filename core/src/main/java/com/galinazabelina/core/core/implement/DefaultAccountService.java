@@ -1,10 +1,12 @@
 package com.galinazabelina.core.core.implement;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.galinazabelina.core.api.dto.AccountDto;
 import com.galinazabelina.core.core.AccountService;
 import com.galinazabelina.core.core.repository.CreditAccountRepository;
 import com.galinazabelina.core.core.repository.DebitAccountRepository;
-import com.galinazabelina.core.core.repository.OperationsHistoryRepository;
 import com.galinazabelina.core.core.repository.UserRepository;
 import com.galinazabelina.core.model.AccountType;
 import com.galinazabelina.core.model.OperationType;
@@ -15,6 +17,8 @@ import java.util.ArrayList;
 
 import com.galinazabelina.core.model.entity.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,9 +31,10 @@ public class DefaultAccountService implements AccountService {
 
     private final CreditAccountRepository creditAccountRepository;
 
-    private final OperationsHistoryRepository operationsHistoryRepository;
-
     private final UserRepository userRepository;
+
+    @Autowired
+    AmqpTemplate template;
 
     @Override
     public AccountDto get(Long id) {
@@ -42,29 +47,41 @@ public class DefaultAccountService implements AccountService {
     public List<AccountDto> getAccounts() {
         List<Account> accounts = new ArrayList<>();
         debitAccountRepository.findAll().forEach(accounts::add);
-        creditAccountRepository.findAll().forEach(accounts::add);
+//        creditAccountRepository.findAll().forEach(accounts::add);
         return accounts.stream().map(this::entityToDto).toList();
     }
 
     @Override
-    public AccountDto openAccount(AccountDto accountDto, AccountType accountType) {
+    public AccountDto openAccount(AccountDto accountDto, AccountType accountType) throws JsonProcessingException {
         accountDto.setIsClosed(false);
         Account newAccount;
         if (accountType == AccountType.DEBIT) {
-            newAccount = debitAccountRepository.save(dtoToAccount(accountDto));
+            newAccount = debitAccountRepository.save(dtoToAccount(accountDto, accountType));
         } else {
-            newAccount = creditAccountRepository.save(dtoToAccount(accountDto));
+            newAccount = creditAccountRepository.save(dtoToAccount(accountDto, accountType));
         }
-        Operation operation = new Operation();
-        operation.setAccountId(newAccount.getId());
-        operation.setTimestamp(ZonedDateTime.now());
-        operation.setOperationType(OperationType.OPEN_ACCOUNT);
-        operationsHistoryRepository.save(operation);
+        Operation openOperation = new Operation();
+        openOperation.setAccountId(newAccount.getId());
+        openOperation.setTimestamp(ZonedDateTime.now());
+        openOperation.setOperationType(OperationType.OPEN_ACCOUNT);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        String openOperationString = objectMapper.writeValueAsString(openOperation);
+        template.convertAndSend("operationQueue", openOperationString);
+
+        Operation replenishmentOperation = new Operation();
+        replenishmentOperation.setAccountId(newAccount.getId());
+        replenishmentOperation.setTimestamp(ZonedDateTime.now());
+        replenishmentOperation.setOperationType(OperationType.REPLENISHMENT);
+        replenishmentOperation.setAmountOfMoney(newAccount.getBalance());
+        replenishmentOperation.setCurrencyCode(newAccount.getCurrencyCode());
+        String replenishmentOperationString = objectMapper.writeValueAsString(openOperation);
+        template.convertAndSend("operationQueue", replenishmentOperationString);
         return entityToDto(newAccount);
     }
 
     @Override
-    public void closeAccount(Long id, AccountType accountType) {
+    public void closeAccount(Long id, AccountType accountType) throws JsonProcessingException {
         if (accountType == AccountType.DEBIT) {
             debitAccountRepository.closeAccountById(id);
         } else {
@@ -74,7 +91,10 @@ public class DefaultAccountService implements AccountService {
         operation.setAccountId(id);
         operation.setTimestamp(ZonedDateTime.now());
         operation.setOperationType(OperationType.CLOSE_ACCOUNT);
-        operationsHistoryRepository.save(operation);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        String operationString = objectMapper.writeValueAsString(operation);
+        template.convertAndSend("operationQueue", operationString);
 
     }
 
@@ -89,13 +109,13 @@ public class DefaultAccountService implements AccountService {
         );
     }
 
-    //todo add exceptions
-    private Account dtoToAccount(AccountDto dto) {
+    private Account dtoToAccount(AccountDto dto, AccountType accountType) {
         Account account = new Account();
         account.setId(dto.getId());
         account.setCurrencyCode(dto.getCurrencyCode());
         account.setBalance(dto.getBalance());
-        account.setUser(userRepository.findById(dto.getUser().getId()).orElseThrow());
+        account.setUser(userRepository.findById(dto.getUser().getId()).orElse(null));
+        account.setAccountType(accountType);
         account.setIsClosed(false);
         return account;
     }
