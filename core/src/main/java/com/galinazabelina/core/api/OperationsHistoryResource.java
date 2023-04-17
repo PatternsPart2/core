@@ -5,6 +5,7 @@ import com.galinazabelina.core.core.OperationsHistoryService;
 import com.galinazabelina.core.core.Parameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,9 +23,9 @@ public class OperationsHistoryResource {
         this.operationsHistoryService = operationsHistoryService;
     }
 
-    @GetMapping
-    public List<OperationDto> get(@PathParam(Parameters.id) Long accountId) {
-        return operationsHistoryService.get(accountId);
+    @GetMapping("/{id}")
+    public List<OperationDto> get(@PathVariable String id) {
+        return operationsHistoryService.get((long) Integer.parseInt(id));
     }
 
 }

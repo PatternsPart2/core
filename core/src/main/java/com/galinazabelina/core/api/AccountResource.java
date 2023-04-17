@@ -41,13 +41,13 @@ public class AccountResource {
         return accountService.openAccount(accountDto, AccountType.CREDIT);
     }
 
-    @PostMapping(Paths.CLOSE_DEBIT_ACCOUNT)
-    public void closeDebitAccount(@PathParam(Parameters.id) Long id) throws JsonProcessingException {
-        accountService.closeAccount(id, AccountType.DEBIT);
+    @PostMapping(Paths.CLOSE_DEBIT_ACCOUNT + "/{id}")
+    public void closeDebitAccount(@PathVariable String id) throws JsonProcessingException {
+        accountService.closeAccount((long) Integer.parseInt(id), AccountType.DEBIT);
     }
 
-    @PostMapping(Paths.CLOSE_CREDIT_ACCOUNT)
-    public void closeCreditAccount(@PathParam(Parameters.id) Long id) throws JsonProcessingException {
-        accountService.closeAccount(id, AccountType.CREDIT);
+    @PostMapping(Paths.CLOSE_CREDIT_ACCOUNT + "/{id}")
+    public void closeCreditAccount(@PathVariable String id) throws JsonProcessingException {
+        accountService.closeAccount((long) Integer.parseInt(id), AccountType.CREDIT);
     }
 }
